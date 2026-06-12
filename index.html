@@ -319,88 +319,101 @@ function joinList(a){
 function decode(s){const t=document.createElement('textarea');t.innerHTML=s;return t.value;}
 
 const FRAG={
-  result:['fought hard and got me a settlement I&rsquo;m thrilled with','never backed down and got me a great result','got me far more than I expected','maximized my settlement when the insurance company wouldn&rsquo;t budge'],
-  insurance:['handled the insurance company so I didn&rsquo;t have to','took every call from the adjusters off my plate','dealt with all the insurance and paperwork for me','stood up to the insurance company on my behalf'],
-  communication:['kept me informed at every step','explained everything in plain language','always let me know exactly where things stood','never left me wondering what was happening'],
-  available:['were there whenever I needed them','answered my calls and emails right away','made me feel like their only client','were always just a phone call away'],
-  questions:['patiently answered every question I had','never made me feel rushed when I needed answers','walked me through everything until it made sense'],
-  caring:['genuinely cared about me and my recovery','showed real compassion while I healed','truly cared about more than just the case'],
-  family:['treated me like family from day one','made me feel truly looked after, not like a case number','made me feel like I mattered'],
-  fought:['fought hard for me the entire way','were true advocates when it mattered most','never let the insurance company push me around','went to bat for me without hesitation'],
-  knowledgeable:['clearly knew the law inside and out','had the experience to handle every detail','knew exactly what they were doing','were sharp and incredibly well prepared'],
-  professional:['were professional and organized from day one','handled everything professionally and on time','ran everything smoothly and professionally'],
-  easy:['took all the stress off my shoulders so I could focus on healing','made a really hard time so much easier','handled everything so I never had to worry','made the whole process simple and stress-free'],
-  fast:['moved quickly and kept my case on track','were efficient and never wasted my time','kept things moving the whole way through'],
-  honest:['were honest and upfront with me about everything','were transparent the whole way through','always shot straight with me'],
-  staff:['had a friendly, helpful team behind them','made every call and email easy to deal with','have a kind, responsive staff'],
+  result:['fought hard and got me a good settlement','didn&rsquo;t give up and got me a great result','got me more money than I thought I would','got me a fair settlement'],
+  insurance:['took care of the insurance company for me','handled all the calls with the insurance people','did all the insurance paperwork for me','stood up to the insurance company for me'],
+  communication:['kept me updated','told me what was going on','always let me know what was happening','explained things in a way I could understand'],
+  available:['were there whenever I needed them','answered my calls and texts right away','made me feel like their only client','were always easy to reach'],
+  questions:['answered all my questions','never made me feel rushed','took the time to explain everything to me'],
+  caring:['really cared about me','cared about me getting better, not just the case','made me feel like they had my back'],
+  family:['treated me like family','made me feel like I mattered','were so kind to me'],
+  fought:['fought hard for me','really went to bat for me','didn&rsquo;t let the insurance company push me around','stood up for me'],
+  knowledgeable:['knew exactly what to do','really knew their stuff','knew the law and how to use it'],
+  professional:['were organized and on top of everything','handled everything the right way','kept everything running smooth'],
+  easy:['made a hard time so much easier','took the stress off me so I could heal','took care of everything so I didn&rsquo;t have to worry','made the whole thing simple'],
+  fast:['worked fast and kept my case moving','didn&rsquo;t waste my time','kept things moving'],
+  honest:['were honest with me about everything','always told me the truth','were upfront with me'],
+  staff:['have a really nice, helpful team','made every call and email easy','everyone on the team was kind'],
 };
 
 function generate(){
   const firm=CONFIG.firmName, who=state.who;
 
   const openers=[
-    'I can&rsquo;t recommend '+firm+' enough.',
-    'Hiring '+firm+' after my accident was the best decision I made.',
-    firm+' took fantastic care of me from start to finish.',
-    'I&rsquo;m so grateful I found '+firm+'.',
+    'I can&rsquo;t say enough good things about '+firm+'.',
+    'Picking '+firm+' was the best choice I made.',
+    firm+' took great care of me.',
+    'I&rsquo;m so glad I found '+firm+'.',
     'Working with '+firm+' was a great experience.',
-    'Choosing '+firm+' was absolutely the right call.',
+    'I&rsquo;m so glad I picked '+firm+'.',
     'I don&rsquo;t know what I would have done without '+firm+'.',
-    'From the moment I called '+firm+', I knew I was in good hands.',
+    'From the first call, '+firm+' made me feel safe.',
     firm+' went above and beyond for me.',
     'I&rsquo;m so glad I trusted '+firm+' with my case.',
-    'Hands down, '+firm+' is the team you want in your corner.',
-    'I had a wonderful experience with '+firm+'.',
+    firm+' is the team you want on your side.',
+    'I had a great experience with '+firm+'.',
   ];
   const opener=pick(openers);
   const openerHasFirm=opener.indexOf(firm)>-1;
 
-  // subjects
-  const PRON=['they','the whole team','everyone there','the entire team'];
-  const startSubjects=PRON.map(cap);                 // They, The whole team...
+  // subjects (kept simple)
+  const PRON=['they','the whole team','everyone there','the team'];
+  const startSubjects=PRON.map(cap);
   if(who){ startSubjects.push(cap(who), cap(who)+' and the team'); }
   if(!openerHasFirm){ startSubjects.push(firm,'The team at '+firm); }
 
   // fragments from chips
   const chosen=[...state.chips].filter(c=>c!=='recommend'&&FRAG[c]);
-  let frags=chosen.map(c=>pick(FRAG[c]));
-  if(frags.length===0)frags=[pick(['took great care of me','went above and beyond for me','were there for me when I needed help most'])];
-  frags=frags.sort(()=>Math.random()-.5).slice(0,3);
-
-  // assemble the middle with one of several sentence shapes
-  const lead=pick(['From day one','Throughout my case','Every step of the way','From start to finish']);
-  const shapes=[
-    ()=> cap(pick(startSubjects))+' '+joinList(frags)+'.',
-    ()=> lead+', '+pick(PRON)+' '+joinList(frags)+'.',
-    ()=>{
-      if(frags.length<2) return cap(pick(startSubjects))+' '+frags[0]+'.';
-      const half=Math.ceil(frags.length/2);
-      const a=frags.slice(0,half), b=frags.slice(half);
-      return cap(pick(startSubjects))+' '+joinList(a)+'. '+cap(pick(PRON))+' also '+joinList(b)+'.';
-    },
-  ];
-  const mid=pick(shapes)();
-
-  // optional note
-  let note='';
-  if(state.note){const n=state.note.replace(/\s+/g,' ').trim();note=' '+(/[.!?]$/.test(n)?n:n+'.');}
+  let pool=chosen.map(c=>pick(FRAG[c]));
+  if(pool.length===0)pool=[pick(['took great care of me','went above and beyond for me','were there for me when I needed help'])];
+  pool=pool.sort(()=>Math.random()-.5);
 
   // closer
   const rec=state.chips.has('recommend');
   const closers=rec?[
-    'If you&rsquo;ve been injured, this is the firm to call.',
-    'I highly recommend '+firm+' to anyone who needs a personal injury lawyer.',
-    'I&rsquo;d recommend them to anyone in a heartbeat.',
-    'Don&rsquo;t hesitate &mdash; call '+firm+'.',
-    'I&rsquo;ll send anyone I know who needs help straight to them.',
+    'If you got hurt, call '+firm+'.',
+    'I would tell anyone who needs help to call '+firm+'.',
+    'I would send them to anyone in a heartbeat.',
+    'Don&rsquo;t wait &mdash; just call '+firm+'.',
     'You won&rsquo;t find a better team.',
+    'I really recommend them.',
   ]:[
-    'Thank you, '+firm+'!','Forever grateful for everything they did.',
-    'I couldn&rsquo;t have asked for a better team.','Truly the best.',
-    'I can&rsquo;t thank them enough.','A fantastic experience from start to finish.',
+    'Thank you, '+firm+'!','I&rsquo;m so thankful for everything they did.',
+    'I couldn&rsquo;t have asked for a better team.','They are the best.',
+    'I can&rsquo;t thank them enough.','It was a great experience from start to finish.',
   ];
+  const closer=pick(closers);
 
-  return decode((opener+' '+mid+note+' '+pick(closers)).replace(/\s+/g,' ').trim());
+  // optional note (client's own words)
+  let note='';
+  if(state.note){const n=state.note.replace(/\s+/g,' ').trim();note=' '+(/[.!?]$/.test(n)?n:n+'.');}
+
+  // pick a length: short / medium / long (a real mix)
+  let bucket; const r=Math.random();
+  if(note){ bucket = r<0.5?'medium':'long'; }            // their own words get room
+  else if(pool.length>=3){ bucket = r<0.45?'medium':'long'; }
+  else if(pool.length<=1){ bucket = r<0.55?'short':'medium'; }
+  else { bucket = r<0.30?'short':(r<0.70?'medium':'long'); }
+
+  const lead=pick(['From day one','The whole time','Every step of the way','Right from the start']);
+  let body='';
+
+  if(bucket==='short'){
+    // shortest reviews: opener + closer, sometimes one simple line in between
+    if(pool.length && Math.random()<0.7){ body=' '+cap(pick(startSubjects))+' '+pool[0]+'.'; }
+  } else if(bucket==='medium'){
+    body=' '+cap(pick(startSubjects))+' '+joinList(pool.slice(0,2))+'.';
+  } else { // long
+    const use=pool.slice(0,3);
+    if(use.length>=2 && Math.random()<0.6){
+      const half=Math.ceil(use.length/2);
+      body=' '+lead+', '+pick(PRON)+' '+joinList(use.slice(0,half))+'. '
+           +cap(pick(PRON))+' also '+joinList(use.slice(half))+'.';
+    } else {
+      body=' '+cap(pick(startSubjects))+' '+joinList(use)+'.';
+    }
+  }
+
+  return decode((opener+body+note+' '+closer).replace(/\s+/g,' ').trim());
 }
 
 /* ---- clipboard ---- */
