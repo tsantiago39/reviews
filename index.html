@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Leave ELG Injury Lawyers a Review</title>
+
+<!--
+  ============================================================
+  ELG INJURY LAWYERS — Client Review Helper
+  ============================================================
+  HOW TO USE:
+  1. (Optional) tweak the CONFIG block below.
+  2. Host this single file anywhere (Netlify drop, your site,
+     GitHub Pages) — no backend, no API key needed.
+  3. Paste the hosted URL into Hona and send it to clients.
+  Only clients who rate 4–5 stars are shown the public Google
+  review step. 1–3 stars are routed to private feedback only.
+  ============================================================
+-->
+
+<script>
+  // ====================== EDIT THIS ======================
+  const CONFIG = {
+    firmName: "ELG Injury Lawyers",   // used inside the review text
+    firmShort: "ELG",                 // shown in the header
+    logoUrl: "https://elginjurylaw.com/wp-content/uploads/2024/12/elg-injury-lawyers-web.png",
+    googleReviewUrl: "https://g.page/r/CQk9V1czJs-5EAI/review",
+    privateFeedbackEmail: "intake@elginjurylaw.com",
+    teamMembers: []   // optional, e.g. ["Dave", "Sarah"] — shows tappable name buttons
+  };
+  // ===================== STOP EDITING =====================
+</script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --ink:#1b1b22;          /* charcoal */
+    --ink-soft:#5c5c66;
+    --paper:#f4f4f6;        /* clean light gray */
+    --card:#ffffff;
+    --red:#c8102e;          /* ELG red */
+    --red-deep:#a30c24;
+    --red-tint:#fbe7ea;
+    --gold:#e6a817;         /* rating stars */
+    --line:#e7e7ec;
+    --shadow:0 10px 40px -14px rgba(27,27,34,.32);
+    --radius:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    background:radial-gradient(120% 80% at 50% -10%, #ffffff 0%, var(--paper) 60%) fixed;
+    color:var(--ink);-webkit-font-smoothing:antialiased;
+    display:flex;justify-content:center;
+    padding:24px 18px calc(28px + env(safe-area-inset-bottom));min-height:100%;
+  }
+  .stage{width:100%;max-width:440px}
+
+  .brand{display:flex;justify-content:center;align-items:center;margin-bottom:22px;
+    background:linear-gradient(180deg,#2a2a33,var(--ink));border-radius:16px;
+    padding:20px 26px;box-shadow:var(--shadow);
+    border-top:3px solid var(--red)}
+  .brand img{height:48px;width:auto;display:block}
+  .brand .fallback{font-family:'Fraunces';font-weight:700;font-size:24px;letter-spacing:.5px;color:#fff}
+  .brand .fallback b{color:var(--red)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:30px 26px 28px}
+
+  .view{display:none}
+  .view.active{display:block;animation:rise .45s cubic-bezier(.2,.7,.2,1)}
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  .eyebrow{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--red);margin-bottom:12px}
+  h1{font-family:'Fraunces';font-weight:600;font-size:27px;line-height:1.18;
+    letter-spacing:-.01em;margin-bottom:10px}
+  .lead{color:var(--ink-soft);font-size:15.5px;line-height:1.5}
+
+  .stars{display:flex;justify-content:center;gap:6px;margin:26px 0 6px}
+  .star{width:46px;height:46px;cursor:pointer;color:#ddd9d0;
+    transition:transform .12s ease,color .12s ease;-webkit-tap-highlight-color:transparent}
+  .star:hover,.star.lit{color:var(--gold)}
+  .star:active{transform:scale(.86)}
+  .star.lit{animation:pop .3s ease}
+  @keyframes pop{0%{transform:scale(.7)}60%{transform:scale(1.18)}100%{transform:scale(1)}}
+  .star svg{width:100%;height:100%;display:block}
+  .star-hint{text-align:center;color:var(--ink-soft);font-size:13px;min-height:18px;margin-top:2px}
+
+  .q-label{font-weight:600;font-size:15px;margin:22px 0 11px}
+  .q-label:first-of-type{margin-top:4px}
+  .chips{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{border:1.5px solid var(--line);background:#fafafb;color:var(--ink);
+    padding:9px 14px;border-radius:999px;font-size:14px;font-weight:500;cursor:pointer;
+    transition:all .14s ease;-webkit-tap-highlight-color:transparent;user-select:none}
+  .chip:active{transform:scale(.95)}
+  .chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+  .chip.on::before{content:"\2713 ";color:var(--gold)}
+
+  input[type=text],textarea{width:100%;font-family:inherit;font-size:15.5px;color:var(--ink);
+    border:1.5px solid var(--line);border-radius:13px;background:#fafafb;padding:13px 14px;
+    transition:border-color .15s ease,background .15s ease}
+  input[type=text]:focus,textarea:focus{outline:none;border-color:var(--red);background:#fff}
+  textarea{resize:vertical;min-height:74px;line-height:1.5}
+  .team-row{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:10px}
+
+  .btn{width:100%;border:none;cursor:pointer;font-family:inherit;font-size:16px;font-weight:600;
+    border-radius:14px;padding:16px;transition:transform .12s ease,box-shadow .2s ease,opacity .2s;
+    -webkit-tap-highlight-color:transparent}
+  .btn:active{transform:scale(.98)}
+  .btn-dark{background:linear-gradient(180deg,#2a2a33,var(--ink));color:#fff;
+    box-shadow:0 8px 22px -8px rgba(27,27,34,.6)}
+  .btn-red{background:linear-gradient(180deg,#d92341,var(--red-deep));color:#fff;
+    box-shadow:0 8px 22px -8px rgba(163,12,36,.6);display:flex;align-items:center;justify-content:center;gap:9px}
+  .btn-ghost{background:transparent;color:var(--ink-soft);font-weight:500;font-size:14px;padding:12px;margin-top:6px}
+  .btn-ghost:hover{color:var(--ink)}
+  .mt{margin-top:16px}
+
+  .review-box{width:100%;font-family:'Inter';font-size:16px;line-height:1.6;color:var(--ink);
+    border:1.5px solid var(--line);border-radius:14px;background:#fafafb;padding:16px;min-height:150px;resize:vertical}
+  .review-box:focus{outline:none;border-color:var(--red);background:#fff}
+  .stars-readout{display:flex;gap:3px;margin-bottom:14px}
+  .stars-readout svg{width:24px;height:24px;color:var(--gold)}
+  .helper{font-size:13px;color:var(--ink-soft);margin:10px 2px 0;line-height:1.45}
+  .row{display:flex;gap:10px;align-items:center}
+  .row .btn{flex:1}
+  .regen{background:#fff;border:1.5px solid var(--line);color:var(--ink);font-size:14px;font-weight:600;
+    border-radius:14px;padding:13px 14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    gap:7px;flex:0 0 auto;transition:transform .12s ease;-webkit-tap-highlight-color:transparent}
+  .regen:active{transform:scale(.96) rotate(-12deg)}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;padding:13px 20px;border-radius:12px;font-size:14px;font-weight:500;
+    box-shadow:var(--shadow);opacity:0;pointer-events:none;
+    transition:all .3s cubic-bezier(.2,.7,.2,1);z-index:50;display:flex;align-items:center;gap:8px}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast .dot{color:var(--gold)}
+  .foot{text-align:center;margin-top:18px;font-size:12px;color:#a3a3ad}
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="brand" id="brand"></div>
+
+    <div class="card">
+      <!-- VIEW 1: RATING -->
+      <section class="view active" id="view-rating">
+        <div class="eyebrow">Thank you</div>
+        <h1>How was your experience with us?</h1>
+        <p class="lead">Your recovery mattered to us. A quick rating is all we need to get started.</p>
+        <div class="stars" id="starInput"></div>
+        <div class="star-hint" id="starHint">Tap a star</div>
+      </section>
+
+      <!-- VIEW 2: QUESTIONS -->
+      <section class="view" id="view-questions">
+        <div class="eyebrow">Almost done</div>
+        <h1>What stood out?</h1>
+        <p class="lead">Tap anything that fits. We&rsquo;ll turn it into a review for you &mdash; no writing required.</p>
+
+        <div class="q-label">What did we do well?</div>
+        <div class="chips" id="chipBank"></div>
+
+        <div class="q-label">Who took care of you? <span style="font-weight:400;color:var(--ink-soft)">(optional)</span></div>
+        <div class="team-row" id="teamRow"></div>
+        <input type="text" id="whoInput" placeholder="Name of your attorney or paralegal" autocomplete="off" />
+
+        <div class="q-label">Anything you&rsquo;d like to add? <span style="font-weight:400;color:var(--ink-soft)">(optional)</span></div>
+        <textarea id="noteInput" placeholder="In your own words&hellip;"></textarea>
+
+        <button class="btn btn-dark mt" id="buildBtn">Write my review &#10024;</button>
+        <button class="btn btn-ghost" id="backToStars">&larr; Back</button>
+      </section>
+
+      <!-- VIEW 3: REVIEW -->
+      <section class="view" id="view-review">
+        <div class="stars-readout" id="reviewStars"></div>
+        <div class="eyebrow">Your review is ready</div>
+        <h1 style="font-size:23px;margin-bottom:8px">Here&rsquo;s a draft &mdash; make it yours</h1>
+        <textarea class="review-box" id="reviewText" spellcheck="true"></textarea>
+        <p class="helper">Tap the text to edit it. When it sounds like you, hit the button &mdash; it copies your review and opens Google so you just paste &amp; post.</p>
+
+        <div class="row mt">
+          <button class="regen" id="regenBtn" title="Try another version">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
+            New version
+          </button>
+          <button class="btn btn-red" id="postBtn">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            Copy &amp; post on Google
+          </button>
+        </div>
+        <button class="btn btn-ghost" id="backToQ">&larr; Change my answers</button>
+      </section>
+
+      <!-- VIEW 4: PRIVATE FEEDBACK (1-3 stars) -->
+      <section class="view" id="view-private">
+        <div class="eyebrow">We hear you</div>
+        <h1>We&rsquo;d like to make this right.</h1>
+        <p class="lead">We&rsquo;re sorry your experience fell short. Tell us what happened and our team will follow up with you personally.</p>
+        <textarea id="privateNote" class="mt" placeholder="What could we have done better?" style="min-height:110px"></textarea>
+        <button class="btn btn-dark mt" id="sendPrivate">Send this to the firm</button>
+      </section>
+    </div>
+
+    <div class="foot" id="foot"></div>
+  </div>
+
+  <div class="toast" id="toast"><span class="dot">&#9679;</span><span id="toastMsg">Copied!</span></div>
+
+<script>
+/* ---- header / logo ---- */
+(function(){
+  const b=document.getElementById('brand');
+  if(CONFIG.logoUrl){
+    const img=new Image();
+    img.src=CONFIG.logoUrl; img.alt=CONFIG.firmName;
+    img.onerror=()=>{ b.innerHTML='<span class="fallback">'+CONFIG.firmShort.replace(/^(.)/,'<b>$1</b>')+'</span>'; };
+    b.appendChild(img);
+  } else {
+    b.innerHTML='<span class="fallback">'+CONFIG.firmShort+'</span>';
+  }
+  document.getElementById('foot').textContent='Powered by your team at '+CONFIG.firmName;
+})();
+
+const STAR='M12 2.5l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.5l6.9-.7z';
+function starSVG(){return '<svg viewBox="0 0 24 24" fill="currentColor"><path d="'+STAR+'"/></svg>';}
+const state={rating:0,chips:new Set(),who:'',note:''};
+
+/* ---- stars ---- */
+const starInput=document.getElementById('starInput');
+const hints=['','Not good','Could be better','It was okay','Good','Excellent!'];
+for(let i=1;i<=5;i++){
+  const s=document.createElement('div');
+  s.className='star';s.dataset.v=i;s.innerHTML=starSVG();
+  s.addEventListener('mouseenter',()=>paint(i));
+  s.addEventListener('mouseleave',()=>paint(state.rating));
+  s.addEventListener('click',()=>choose(i));
+  starInput.appendChild(s);
+}
+function paint(n){[...starInput.children].forEach(c=>c.classList.toggle('lit',+c.dataset.v<=n));
+  document.getElementById('starHint').textContent=n?hints[n]:'Tap a star';}
+function choose(n){state.rating=n;paint(n);
+  setTimeout(()=>{ n>=4 ? go('view-questions') : go('view-private'); },420);}
+
+/* ---- chips ---- */
+const CHIPS=[
+  {id:'result',label:'Got me a great settlement'},
+  {id:'insurance',label:'Handled the insurance company'},
+  {id:'communication',label:'Kept me informed'},
+  {id:'available',label:'Always available'},
+  {id:'caring',label:'Truly cared'},
+  {id:'fought',label:'Fought hard for me'},
+  {id:'easy',label:'Made it stress-free'},
+  {id:'honest',label:'Honest & upfront'},
+  {id:'recommend',label:'Would recommend'},
+];
+const chipBank=document.getElementById('chipBank');
+CHIPS.forEach(c=>{
+  const el=document.createElement('div');
+  el.className='chip';el.textContent=c.label;
+  el.addEventListener('click',()=>{el.classList.toggle('on');
+    el.classList.contains('on')?state.chips.add(c.id):state.chips.delete(c.id);});
+  chipBank.appendChild(el);
+});
+
+/* ---- optional team quick-pick ---- */
+const teamRow=document.getElementById('teamRow');
+if(CONFIG.teamMembers&&CONFIG.teamMembers.length){
+  CONFIG.teamMembers.forEach(name=>{
+    const el=document.createElement('div');el.className='chip';el.textContent=name;
+    el.addEventListener('click',()=>{[...teamRow.children].forEach(x=>x.classList.remove('on'));
+      el.classList.add('on');document.getElementById('whoInput').value=name;});
+    teamRow.appendChild(el);
+  });
+}else{teamRow.style.display='none';}
+
+/* ---- nav ---- */
+function go(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+document.getElementById('backToStars').onclick=()=>go('view-rating');
+document.getElementById('backToQ').onclick=()=>go('view-questions');
+document.getElementById('buildBtn').onclick=()=>{
+  state.who=document.getElementById('whoInput').value.trim();
+  state.note=document.getElementById('noteInput').value.trim();
+  renderReviewStars();
+  document.getElementById('reviewText').value=generate();
+  go('view-review');
+};
+document.getElementById('regenBtn').onclick=()=>{document.getElementById('reviewText').value=generate();};
+function renderReviewStars(){const r=document.getElementById('reviewStars');r.innerHTML='';
+  for(let i=0;i<state.rating;i++)r.insertAdjacentHTML('beforeend',starSVG());}
+
+/* ---- review generator ---- */
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+const FRAG={
+  result:['fought hard and got me a settlement I&rsquo;m thrilled with','never backed down and got me a great result','maximized my settlement when the insurance company wouldn&rsquo;t budge'],
+  insurance:['handled the insurance company so I didn&rsquo;t have to','took every call from the adjusters off my plate','dealt with all the insurance and paperwork for me'],
+  communication:['kept me informed at every step','explained everything in plain language','always answered my questions clearly'],
+  available:['were there whenever I needed them','answered my calls and emails right away','made me feel like their only client'],
+  caring:['genuinely cared about me and my recovery','treated me like family, not a case number','showed real compassion while I healed'],
+  fought:['fought hard for me the entire way','were true advocates when it mattered most','never let the insurance company push me around'],
+  easy:['took all the stress off my shoulders so I could focus on healing','made a really hard time so much easier','handled everything so I never had to worry'],
+  honest:['were honest and upfront with me about everything','were transparent the whole way through'],
+};
+function generate(){
+  const firm=CONFIG.firmName, who=state.who;
+  const subj=who?pick([who,who+' and the team',who]):pick([firm,'The team at '+firm,'They','Everyone here']);
+  const openers=[
+    'I can&rsquo;t recommend '+firm+' enough.',
+    'Hiring '+firm+' after my accident was the best decision I made.',
+    firm+' took fantastic care of me from start to finish.',
+    'I&rsquo;m so grateful I found '+firm+'.',
+    'Working with '+firm+' was a great experience.',
+    'Choosing '+firm+' was absolutely the right call.',
+  ];
+  const chosen=[...state.chips].filter(c=>c!=='recommend'&&FRAG[c]);
+  let frags=chosen.map(c=>pick(FRAG[c]));
+  if(frags.length===0)frags=[pick(['took great care of me','went above and beyond for me','were there for me when I needed help most'])];
+  frags=frags.sort(()=>Math.random()-.5).slice(0,3);
+  let mid;
+  if(frags.length===1)mid=cap(subj)+' '+frags[0]+'.';
+  else if(frags.length===2)mid=cap(subj)+' '+frags[0]+' and '+frags[1]+'.';
+  else mid=cap(subj)+' '+frags[0]+' and '+frags[1]+'. '+cap(pick(['they','the whole team']))+' also '+frags[2]+'.';
+  let note='';
+  if(state.note){const n=state.note.replace(/\s+/g,' ').trim();note=' '+(/[.!?]$/.test(n)?n:n+'.');}
+  const rec=state.chips.has('recommend');
+  const closers=rec?[
+    'If you&rsquo;ve been injured, this is the firm to call.',
+    'I highly recommend '+firm+' to anyone who needs a personal injury lawyer.',
+    'I&rsquo;d recommend them to anyone in a heartbeat.',
+    'Don&rsquo;t hesitate &mdash; call '+firm+'.',
+  ]:[
+    'Thank you, '+firm+'!',
+    'Forever grateful for everything they did.',
+    'I couldn&rsquo;t have asked for a better team.',
+    'Truly the best.',
+  ];
+  const out=(pick(openers)+' '+mid+note+' '+pick(closers)).replace(/\s+/g,' ').trim();
+  // decode the few HTML entities we used so the clipboard text is clean
+  const t=document.createElement('textarea');t.innerHTML=out;return t.value;
+}
+
+/* ---- copy & post ---- */
+const toast=document.getElementById('toast');
+function showToast(m){document.getElementById('toastMsg').textContent=m;toast.classList.add('show');
+  clearTimeout(showToast._t);showToast._t=setTimeout(()=>toast.classList.remove('show'),2800);}
+document.getElementById('postBtn').onclick=async()=>{
+  const text=document.getElementById('reviewText').value.trim();let copied=false;
+  try{await navigator.clipboard.writeText(text);copied=true;}
+  catch(e){const ta=document.getElementById('reviewText');ta.focus();ta.select();
+    try{copied=document.execCommand('copy');}catch(_){}}
+  showToast(copied?'Copied! Opening Google &mdash; just paste & post':'Opening Google &mdash; paste your review there');
+  setTimeout(()=>{window.open(CONFIG.googleReviewUrl,'_blank','noopener');},700);
+};
+
+/* ---- private feedback (terminal for 1-3 stars) ---- */
+document.getElementById('sendPrivate').onclick=()=>{
+  const msg=document.getElementById('privateNote').value.trim();
+  const subject=encodeURIComponent('Feedback for '+CONFIG.firmName+' ('+state.rating+' star)');
+  const body=encodeURIComponent((msg||'(no message)')+'\n\n- Rating left: '+state.rating+' of 5');
+  window.location.href='mailto:'+CONFIG.privateFeedbackEmail+'?subject='+subject+'&body='+body;
+  showToast('Opening your email to send this to us');
+};
+</script>
+</body>
+</html>
