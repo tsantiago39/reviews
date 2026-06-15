@@ -23,6 +23,24 @@
     logoUrl: "https://elginjurylaw.com/wp-content/uploads/2024/12/elg-injury-lawyers-web.png",
     googleReviewUrl: "https://g.page/r/CQk9V1czJs-5EAI/review",
     privateFeedbackEmail: "ts@elginjurylaw.com",
+    // 1-3 star feedback is posted silently into your Jotform in the background,
+    // so the client stays on this page (no mail app, no redirect). Setup:
+    //   1. Build a Jotform with a Long Text field for the message
+    //      (optionally Short Text fields for rating and concerns).
+    //   2. Turn OFF any CAPTCHA on that form (a captcha blocks silent sends).
+    //   3. Get the field input NAMES (format: q{number}_{uniquename}).
+    //      Easiest: paste your form link in chat and I'll fill these in for you.
+    //   4. Make sure the form emails you at ts@elginjurylaw.com (Jotform default).
+    // Leave formId blank to fall back to opening the client's mail app.
+    jotform: {
+      formId: "261655639892069",   // your Client Feedback Form
+      region: "com",         // "com", "us", or "eu" - match your form's domain
+      fields: {
+        message:  "q3_textarea1",  // your "detailed feedback" field
+        rating:   "q2_rating0",    // your 1-5 rating field
+        concerns: ""               // your form has none; concerns fold into the message
+      }
+    },
     teamMembers: []   // optional, e.g. ["Dave","Sarah"]
   };
   // ===================== STOP EDITING =====================
@@ -335,85 +353,94 @@ const FRAG={
   staff:['have a really nice, helpful team','made every call and email easy','everyone on the team was kind'],
 };
 
+function join(parts){return parts.filter(Boolean).join(' ').replace(/\s+/g,' ').trim();}
+
+/* Eight different "people," each with their own tone, rhythm, and quirks.
+   All stay simple (about a 5th-grade reading level). */
+const VOICES=[
+  // 1) Brief & blunt — a few short words
+  (c)=>{
+    const o=pick(['Great firm.','Best choice I made.','So glad I called '+c.firm+'.','Couldn&rsquo;t be happier.','5 stars.','No complaints here.']);
+    const m=c.frags.length?cap(c.pron())+' '+c.frags[0]+'.':'';
+    const cl=c.rec?pick(['Highly recommend.','Would recommend.','Just call them.']):pick(['Thank you!','The best.','Two thumbs up.']);
+    return join([o,m,c.note,cl]);
+  },
+  // 2) Enthusiastic — lots of energy
+  (c)=>{
+    const o=pick(['Wow, I can&rsquo;t say enough about '+c.firm+'!',c.firm+' is AMAZING!','I am so happy I picked '+c.firm+'!','Best team ever!']);
+    const m=c.frags.length?cap(c.pron())+' '+joinList(c.frags.slice(0,2))+'!':'';
+    const cl=c.rec?pick(['Call them, you won&rsquo;t regret it!','100% recommend!','Do not go anywhere else!']):pick(['Thank you so much!!','I love this team!']);
+    return join([o,m,c.note,cl]);
+  },
+  // 3) Storyteller — opens with their situation
+  (c)=>{
+    const start=pick(['After my accident, I didn&rsquo;t know what to do.','I was hurt and really scared about what came next.','When I got hurt, I had no idea where to turn.','My accident turned my whole life upside down.']);
+    const turn=pick(['Then I called '+c.firm+'.','That&rsquo;s when I found '+c.firm+'.','A friend told me to call '+c.firm+'.']);
+    const m=c.frags.length?cap(c.pron())+' '+joinList(c.frags.slice(0,3))+'.':cap(c.pron())+' took care of everything.';
+    const cl=c.rec?pick(['If you got hurt, call them.','I&rsquo;m so glad I did.','I would do it again in a heartbeat.']):pick(['I&rsquo;m so thankful.','I couldn&rsquo;t have done it without them.']);
+    return join([start,turn,m,c.note,cl]);
+  },
+  // 4) Grateful & heartfelt
+  (c)=>{
+    const o=pick(['I am so thankful I found '+c.firm+'.','Thank you '+c.firm+', from the bottom of my heart.','I don&rsquo;t know what I would have done without '+c.firm+'.']);
+    const m=c.frags.length?cap(c.pron())+' '+joinList(c.frags.slice(0,2))+'.':'';
+    const extra=pick(['They really cared about me.','I always felt safe with them.','I never felt like just a number.']);
+    const cl=c.rec?pick(['I will send everyone I know to them.','I recommend them with my whole heart.']):pick(['Thank you for everything.','I can&rsquo;t thank them enough.']);
+    return join([o,m,extra,c.note,cl]);
+  },
+  // 5) Matter-of-fact — plain and to the point
+  (c)=>{
+    const o=pick([c.firm+' handled my case from start to finish.','Here is my honest review of '+c.firm+'.','I hired '+c.firm+' after my accident.']);
+    const m=c.frags.length?cap(c.pron())+' '+joinList(c.frags.slice(0,3))+'.':cap(c.pron())+' did a good job.';
+    const cl=c.rec?pick(['I would recommend them.','A solid choice if you need help.']):pick(['No complaints.','Happy with how it went.']);
+    return join([o,m,c.note,cl]);
+  },
+  // 6) Recommender — talks straight to the reader
+  (c)=>{
+    const o=pick(['If you got hurt, do yourself a favor and call '+c.firm+'.','Need a lawyer? Stop looking. Call '+c.firm+'.','Take my advice and call '+c.firm+'.']);
+    const m=c.frags.length?cap(c.pron())+' '+joinList(c.frags.slice(0,2))+'.':'';
+    const cl=pick(['You will be in good hands.','You won&rsquo;t be sorry.','Best call you can make.']);
+    return join([o,m,c.note,cl]);
+  },
+  // 7) Casual texter — informal, all lowercase
+  (c)=>{
+    const o=pick(['honestly the best choice i made.','can&rsquo;t recommend these guys enough.','so glad i went with '+c.firm.toLowerCase()+'.','10/10 experience.']);
+    const m=c.frags.length?c.pron()+' '+joinList(c.frags.slice(0,2))+'.':'they really came through for me.';
+    const cl=c.rec?pick(['would def recommend.','call them, trust me.','10/10.']):pick(['thank you guys!','super happy.']);
+    return join([o,m,c.note,cl]).toLowerCase();
+  },
+  // 8) Polite & formal — an older, gracious voice
+  (c)=>{
+    const o=pick(['I would like to thank the team at '+c.firm+'.','It was a pleasure working with '+c.firm+'.','I am very pleased with '+c.firm+'.']);
+    const m=c.frags.length?cap(c.pron())+' '+joinList(c.frags.slice(0,2))+'.':'';
+    const extra=pick(['They treated me with kindness and respect.','They were always polite and helpful.']);
+    const cl=c.rec?pick(['I would happily recommend them.','I recommend their help to anyone.']):pick(['Thank you very much.','I am grateful for their help.']);
+    return join([o,m,extra,c.note,cl]);
+  },
+];
+
 function generate(){
   const firm=CONFIG.firmName, who=state.who;
 
-  const openers=[
-    'I can&rsquo;t say enough good things about '+firm+'.',
-    'Picking '+firm+' was the best choice I made.',
-    firm+' took great care of me.',
-    'I&rsquo;m so glad I found '+firm+'.',
-    'Working with '+firm+' was a great experience.',
-    'I&rsquo;m so glad I picked '+firm+'.',
-    'I don&rsquo;t know what I would have done without '+firm+'.',
-    'From the first call, '+firm+' made me feel safe.',
-    firm+' went above and beyond for me.',
-    'I&rsquo;m so glad I trusted '+firm+' with my case.',
-    firm+' is the team you want on your side.',
-    'I had a great experience with '+firm+'.',
-  ];
-  const opener=pick(openers);
-  const openerHasFirm=opener.indexOf(firm)>-1;
-
-  // subjects (kept simple)
-  const PRON=['they','the whole team','everyone there','the team'];
-  const startSubjects=PRON.map(cap);
-  if(who){ startSubjects.push(cap(who), cap(who)+' and the team'); }
-  if(!openerHasFirm){ startSubjects.push(firm,'The team at '+firm); }
-
-  // fragments from chips
-  const chosen=[...state.chips].filter(c=>c!=='recommend'&&FRAG[c]);
-  let pool=chosen.map(c=>pick(FRAG[c]));
-  if(pool.length===0)pool=[pick(['took great care of me','went above and beyond for me','were there for me when I needed help'])];
-  pool=pool.sort(()=>Math.random()-.5);
-
-  // closer
-  const rec=state.chips.has('recommend');
-  const closers=rec?[
-    'If you got hurt, call '+firm+'.',
-    'I would tell anyone who needs help to call '+firm+'.',
-    'I would send them to anyone in a heartbeat.',
-    'Don&rsquo;t wait &mdash; just call '+firm+'.',
-    'You won&rsquo;t find a better team.',
-    'I really recommend them.',
-  ]:[
-    'Thank you, '+firm+'!','I&rsquo;m so thankful for everything they did.',
-    'I couldn&rsquo;t have asked for a better team.','They are the best.',
-    'I can&rsquo;t thank them enough.','It was a great experience from start to finish.',
-  ];
-  const closer=pick(closers);
-
-  // optional note (client's own words)
-  let note='';
-  if(state.note){const n=state.note.replace(/\s+/g,' ').trim();note=' '+(/[.!?]$/.test(n)?n:n+'.');}
-
-  // pick a length: short / medium / long (a real mix)
-  let bucket; const r=Math.random();
-  if(note){ bucket = r<0.5?'medium':'long'; }            // their own words get room
-  else if(pool.length>=3){ bucket = r<0.45?'medium':'long'; }
-  else if(pool.length<=1){ bucket = r<0.55?'short':'medium'; }
-  else { bucket = r<0.30?'short':(r<0.70?'medium':'long'); }
-
-  const lead=pick(['From day one','The whole time','Every step of the way','Right from the start']);
-  let body='';
-
-  if(bucket==='short'){
-    // shortest reviews: opener + closer, sometimes one simple line in between
-    if(pool.length && Math.random()<0.7){ body=' '+cap(pick(startSubjects))+' '+pool[0]+'.'; }
-  } else if(bucket==='medium'){
-    body=' '+cap(pick(startSubjects))+' '+joinList(pool.slice(0,2))+'.';
-  } else { // long
-    const use=pool.slice(0,3);
-    if(use.length>=2 && Math.random()<0.6){
-      const half=Math.ceil(use.length/2);
-      body=' '+lead+', '+pick(PRON)+' '+joinList(use.slice(0,half))+'. '
-           +cap(pick(PRON))+' also '+joinList(use.slice(half))+'.';
-    } else {
-      body=' '+cap(pick(startSubjects))+' '+joinList(use)+'.';
-    }
+  // a subject that sometimes uses the person's name if given
+  function pron(){
+    if(who && Math.random()<0.4) return Math.random()<0.5?who:who+' and the team';
+    return pick(['they','the team','everyone there']);
   }
 
-  return decode((opener+body+note+' '+closer).replace(/\s+/g,' ').trim());
+  // fragments from the chips they tapped, shuffled
+  const chosen=[...state.chips].filter(c=>c!=='recommend'&&FRAG[c]);
+  let frags=chosen.map(c=>pick(FRAG[c]));
+  if(frags.length===0)frags=[pick(['took great care of me','went above and beyond for me','were there for me when I needed help'])];
+  frags=frags.sort(()=>Math.random()-.5);
+
+  // their own words, if any
+  let note='';
+  if(state.note){const n=state.note.replace(/\s+/g,' ').trim();note=(/[.!?]$/.test(n)?n:n+'.');}
+
+  const ctx={firm,who,frags,note,rec:state.chips.has('recommend'),pron};
+  const voice=pick(VOICES);
+  return decode(voice(ctx));
 }
 
 /* ---- clipboard ---- */
@@ -437,16 +464,62 @@ document.getElementById('postBtn').onclick=()=>{
 };
 
 /* ---- private feedback ---- */
-document.getElementById('sendPrivate').onclick=()=>{
+function privateThanks(){
+  document.getElementById('view-private').innerHTML =
+    '<div class="eyebrow">Thank you</div>'+
+    '<h1>Thank you for telling us.</h1>'+
+    '<p class="lead">Your feedback went straight to our team, and someone will reach out to you personally. We appreciate the chance to make things right.</p>';
+}
+function buildFeedbackBody(){
   const msg=document.getElementById('privateNote').value.trim();
   const tags=[...state.concerns];
+  let body=(msg||'(no additional message)');
+  if(tags.length)body+='\n\nConcerns: '+tags.join(', ');
+  body+='\n\nRating left: '+state.rating+' of 5';
+  return body;
+}
+function mailtoFallback(body){
   const subject=encodeURIComponent('Feedback for '+CONFIG.firmName+' ('+state.rating+' star)');
-  let bodyText=(msg||'(no additional message)');
-  if(tags.length)bodyText+='\n\nConcerns selected: '+tags.join(', ');
-  bodyText+='\n\n- Rating left: '+state.rating+' of 5';
-  window.location.href='mailto:'+CONFIG.privateFeedbackEmail+'?subject='+subject+'&body='+encodeURIComponent(bodyText);
+  window.location.href='mailto:'+CONFIG.privateFeedbackEmail+'?subject='+subject+'&body='+encodeURIComponent(body);
   showToast('Opening your email to send this to us');
+}
+// posts into the Jotform in the background; page never navigates
+function submitToJotform(body,tags){
+  const jf=CONFIG.jotform;
+  let frame=document.getElementById('jf_sink');
+  if(!frame){ frame=document.createElement('iframe'); frame.name='jf_sink'; frame.id='jf_sink'; frame.style.display='none'; document.body.appendChild(frame); }
+  const form=document.createElement('form');
+  form.action='https://submit.jotform.'+(jf.region||'com')+'/submit/'+jf.formId;
+  form.method='POST'; form.target='jf_sink'; form.style.display='none';
+  const add=(name,val)=>{ if(!name) return; const i=document.createElement('input'); i.type='hidden'; i.name=name; i.value=val; form.appendChild(i); };
+  add('formID', jf.formId);
+  add(jf.fields.message, body);
+  if(jf.fields.rating) add(jf.fields.rating, String(state.rating));
+  if(jf.fields.concerns && tags.length) add(jf.fields.concerns, tags.join(', '));
+  document.body.appendChild(form);
+  form.submit();
+  setTimeout(()=>form.remove(),1500);
+}
+document.getElementById('sendPrivate').onclick=function(){
+  const btn=this;
+  const tags=[...state.concerns];
+  const body=buildFeedbackBody();
+  const jf=CONFIG.jotform;
+  const ready = jf && jf.formId && jf.fields && jf.fields.message;
+
+  // Not configured yet -> fall back to the client's mail app
+  if(!ready){ mailtoFallback(body); return; }
+
+  btn.disabled=true; btn.textContent='Sending\u2026';
+  try{
+    submitToJotform(body,tags);
+    setTimeout(privateThanks,700);   // stay on page, show our own thank-you
+  }catch(e){
+    btn.disabled=false; btn.textContent='Send this to the firm';
+    mailtoFallback(body);            // never lose their words
+  }
 };
+
 </script>
 </body>
 </html>
