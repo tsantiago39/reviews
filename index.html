@@ -107,6 +107,8 @@
     transition:transform .12s ease,box-shadow .2s ease,opacity .2s;-webkit-tap-highlight-color:transparent}
   .btn:active{transform:scale(.98)}
   .btn-dark{background:linear-gradient(180deg,#2a2a33,var(--ink));color:#fff;box-shadow:0 8px 22px -8px rgba(27,27,34,.6)}
+  .btn-outline{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+  .btn-outline:active{background:#fafafb}
   .btn-red{background:linear-gradient(180deg,#d92341,var(--red-deep));color:#fff;box-shadow:0 8px 22px -8px rgba(163,12,36,.6);
     display:flex;align-items:center;justify-content:center;gap:9px}
   .btn-ghost{background:transparent;color:var(--ink-soft);font-weight:500;font-size:14px;padding:12px;margin-top:6px}
@@ -158,6 +160,16 @@
         <div class="star-hint" id="starHint">Tap a star</div>
       </section>
 
+      <!-- VIEW 1b: CHOOSE METHOD -->
+      <section class="view" id="view-choose">
+        <div class="eyebrow">Thank you</div>
+        <h1>How would you like to leave your review?</h1>
+        <p class="lead">Either way takes about a minute &mdash; your call.</p>
+        <button class="btn btn-dark mt" id="chooseAI">Help me write it &#10024;</button>
+        <button class="btn btn-outline mt" id="chooseOwn">I&rsquo;ll write my own</button>
+        <button class="btn btn-ghost" id="chooseBack">&larr; Back</button>
+      </section>
+
       <!-- VIEW 2: QUESTIONS -->
       <section class="view" id="view-questions">
         <div class="eyebrow">Almost done</div>
@@ -166,6 +178,9 @@
 
         <div class="q-label">What did we do well?</div>
         <div class="chips" id="chipBank"></div>
+
+        <div class="q-label">Prefer to keep it low-key? <span style="font-weight:400;color:var(--ink-soft)">(optional)</span></div>
+        <div class="chips" id="neutralBank"></div>
 
         <div class="q-label">Who took care of you? <span style="font-weight:400;color:var(--ink-soft)">(optional)</span></div>
         <div class="team-row" id="teamRow"></div>
@@ -239,7 +254,7 @@
 
 const STAR='M12 2.5l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.5l6.9-.7z';
 function starSVG(){return '<svg viewBox="0 0 24 24" fill="currentColor"><path d="'+STAR+'"/></svg>';}
-const state={rating:0,chips:new Set(),concerns:new Set(),who:'',note:''};
+const state={rating:0,chips:new Set(),neutral:new Set(),concerns:new Set(),who:'',note:'',mode:'ai'};
 
 /* ---- stars ---- */
 const starInput=document.getElementById('starInput');
@@ -253,7 +268,7 @@ for(let i=1;i<=5;i++){
 }
 function paint(n){[...starInput.children].forEach(c=>c.classList.toggle('lit',+c.dataset.v<=n));
   document.getElementById('starHint').textContent=n?hints[n]:'Tap a star';}
-function choose(n){state.rating=n;paint(n);setTimeout(()=>{n>=4?go('view-questions'):go('view-private');},420);}
+function choose(n){state.rating=n;paint(n);setTimeout(()=>{n>=4?go('view-choose'):go('view-private');},420);}
 
 /* ---- positive chips ---- */
 const CHIPS=[
@@ -281,6 +296,24 @@ CHIPS.forEach(c=>{
   chipBank.appendChild(el);
 });
 
+/* ---- neutral chips (more measured, low-key tone) ---- */
+const NEUTRAL=[
+  {id:'okay',     label:'Things went smoothly',   s:'Overall, things went smoothly.'},
+  {id:'jobdone',  label:'Got the job done',        s:'They got the job done.'},
+  {id:'fairpro',  label:'Fair and professional',   s:'They were fair and professional.'},
+  {id:'responsive',label:'Responsive when needed',  s:'They were responsive when I needed them.'},
+  {id:'nocomplaints',label:'No complaints',         s:'I have no complaints.'},
+  {id:'woulduse', label:'Would use again',          s:'I would use them again if I needed to.'},
+];
+const NEUTRAL_MAP={}; NEUTRAL.forEach(n=>NEUTRAL_MAP[n.id]=n.s);
+const neutralBank=document.getElementById('neutralBank');
+NEUTRAL.forEach(c=>{
+  const el=document.createElement('div');el.className='chip';el.textContent=c.label;
+  el.addEventListener('click',()=>{el.classList.toggle('on');
+    el.classList.contains('on')?state.neutral.add(c.id):state.neutral.delete(c.id);});
+  neutralBank.appendChild(el);
+});
+
 /* ---- concern chips ---- */
 const CONCERNS=['Communication could be better','Wanted more updates','Hard to reach','Felt rushed','Took too long','Outcome concerns','Billing questions','Didn\u2019t feel heard'];
 const concernBank=document.getElementById('concernBank');
@@ -306,16 +339,44 @@ if(CONFIG.teamMembers&&CONFIG.teamMembers.length){
 function go(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById(id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
 document.getElementById('backToStars').onclick=()=>go('view-rating');
-document.getElementById('backToQ').onclick=()=>go('view-questions');
+document.getElementById('backToQ').onclick=()=>go(state.mode==='own'?'view-choose':'view-questions');
+
+// choice screen
+document.getElementById('chooseBack').onclick=()=>go('view-rating');
+document.getElementById('chooseAI').onclick=()=>{ state.mode='ai'; go('view-questions'); };
+document.getElementById('chooseOwn').onclick=()=>{ state.mode='own'; showReview('own'); };
+
+// prepare and show the review screen for either mode
+function showReview(mode){
+  state.mode=mode;
+  renderReviewStars();
+  const ta=document.getElementById('reviewText');
+  const regen=document.getElementById('regenBtn');
+  const note=document.querySelector('#view-review .copied-note');
+  const h=document.querySelector('#view-review h1');
+  const back=document.getElementById('backToQ');
+  if(mode==='own'){
+    ta.value=''; ta.placeholder='Write a few words about your experience\u2026';
+    regen.style.display='none';
+    note.style.display='none';
+    h.textContent='Write your review';
+    back.textContent='\u2190 Back';
+    setTimeout(()=>ta.focus(),300);
+  }else{
+    const text=generate();
+    ta.value=text; copyText(text);
+    regen.style.display='';
+    note.style.display='';
+    h.textContent='Here\u2019s your review';
+    back.textContent='\u2190 Change my answers';
+  }
+  go('view-review');
+}
 
 document.getElementById('buildBtn').onclick=()=>{
   state.who=document.getElementById('whoInput').value.trim();
   state.note=document.getElementById('noteInput').value.trim();
-  renderReviewStars();
-  const text=generate();
-  document.getElementById('reviewText').value=text;
-  copyText(text);
-  go('view-review');
+  showReview('ai');
 };
 document.getElementById('regenBtn').onclick=()=>{
   const text=generate();
@@ -428,17 +489,39 @@ function generate(){
     return pick(['they','the team','everyone there']);
   }
 
-  // fragments from the chips they tapped, shuffled
+  // fragments from the positive chips they tapped, shuffled
   const chosen=[...state.chips].filter(c=>c!=='recommend'&&FRAG[c]);
   let frags=chosen.map(c=>pick(FRAG[c]));
-  if(frags.length===0)frags=[pick(['took great care of me','went above and beyond for me','were there for me when I needed help'])];
   frags=frags.sort(()=>Math.random()-.5);
 
   // their own words, if any
   let note='';
   if(state.note){const n=state.note.replace(/\s+/g,' ').trim();note=(/[.!?]$/.test(n)?n:n+'.');}
 
-  const ctx={firm,who,frags,note,rec:state.chips.has('recommend'),pron};
+  const rec=state.chips.has('recommend');
+
+  // If they tapped any neutral options, write a calm, measured review instead
+  const neu=[...state.neutral].map(id=>NEUTRAL_MAP[id]).filter(Boolean).sort(()=>Math.random()-.5);
+  if(neu.length){
+    const o=pick([
+      'I had a good experience with '+firm+'.',
+      'Overall I was satisfied with '+firm+'.',
+      firm+' did a good job on my case.',
+      firm+' handled my case well.',
+      'I was happy with the work '+firm+' did.',
+    ]);
+    const parts=[o, ...neu.slice(0,2)];
+    if(frags.length && Math.random()<0.6) parts.push(cap(pron())+' '+frags[0]+'.');
+    if(note) parts.push(note);
+    parts.push(rec
+      ? pick(['I would recommend them.','Worth a call if you need help.','I would use them again.'])
+      : pick(['No complaints.','Thank you.','I was satisfied with how it went.','A solid experience overall.']));
+    return decode(join(parts));
+  }
+
+  // otherwise: the upbeat, varied persona voices
+  if(frags.length===0)frags=[pick(['took great care of me','went above and beyond for me','were there for me when I needed help'])];
+  const ctx={firm,who,frags,note,rec,pron};
   const voice=pick(VOICES);
   return decode(voice(ctx));
 }
