@@ -38,7 +38,10 @@
       fields: {
         message:  "q3_textarea1",  // your "detailed feedback" field
         rating:   "q2_rating0",    // your 1-5 rating field
-        concerns: ""               // your form has none; concerns fold into the message
+        concerns: "",              // your form has none; concerns fold into the message
+        name:     ""               // optional: add a Name field to your Jotform, then
+                                   // paste its input name here (e.g. "q4_name4").
+                                   // Left blank, the name still appears in the message.
       }
     },
     teamMembers: []   // optional, e.g. ["Dave","Sarah"]
@@ -229,7 +232,10 @@
         <div class="q-label">What let you down?</div>
         <div class="chips" id="concernBank"></div>
 
-        <div class="q-label" style="margin-top:20px">Tell us what happened</div>
+        <div class="q-label" style="margin-top:20px">Your name</div>
+        <input type="text" id="privateName" placeholder="So we know who to follow up with" autocomplete="name" />
+
+        <div class="q-label">Tell us what happened</div>
         <textarea id="privateNote" placeholder="The more you share, the better we can fix it&hellip;" style="min-height:104px"></textarea>
         <button class="btn btn-dark mt" id="sendPrivate">Send this to the firm</button>
       </section>
@@ -555,8 +561,11 @@ function privateThanks(){
 }
 function buildFeedbackBody(){
   const msg=document.getElementById('privateNote').value.trim();
+  const name=document.getElementById('privateName').value.trim();
   const tags=[...state.concerns];
-  let body=(msg||'(no additional message)');
+  let body='';
+  if(name)body+='Name: '+name+'\n\n';
+  body+=(msg||'(no additional message)');
   if(tags.length)body+='\n\nConcerns: '+tags.join(', ');
   body+='\n\nRating left: '+state.rating+' of 5';
   return body;
@@ -579,6 +588,7 @@ function submitToJotform(body,tags){
   add(jf.fields.message, body);
   if(jf.fields.rating) add(jf.fields.rating, String(state.rating));
   if(jf.fields.concerns && tags.length) add(jf.fields.concerns, tags.join(', '));
+  if(jf.fields.name){ const nm=document.getElementById('privateName').value.trim(); if(nm) add(jf.fields.name, nm); }
   document.body.appendChild(form);
   form.submit();
   setTimeout(()=>form.remove(),1500);
